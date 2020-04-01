@@ -1,11 +1,26 @@
-#MainContainer
+#mainContainer
 {
     text-align: left;
     padding: 3px;
     height: 100%;
 }
 
-#MainInputText
+#headerContainer
+{
+    display: flex;
+}
+
+#inputContainer
+{
+    flex: 8;
+}
+
+#separatorContainer
+{
+    flex: 2;
+}
+
+.inputText
 {
     outline: none;
     border: none;
@@ -14,9 +29,11 @@
     margin-top: 20px;
     font-family: "Segoe UI";
     font-size: 14px;
+    width: 95%;
+    resize: none;
 }
 
-#MainInputText:focus 
+.inputText:focus 
 {
     outline: none;
     border: solid 1px;
@@ -25,16 +42,18 @@
     margin-top: 20px;
     font-family: "Segoe UI";
     font-size: 14px;
+    width: 95%;
+    resize: none;
 }
 
-#SplittedContainer
+#splittedContainer
 {
     text-align: left;
     padding: 5px;
     height: 100%;
 }
 
-#SplittedContainer > input
+#splittedContainer > button
 {
     text-align: left;
     background-color: #00000094;
@@ -46,7 +65,6 @@
     border: NONE;
     color: white;
     border-radius: 3px;
-    width: 90%;
     margin: 3px;
     margin-right: 5px;
     cursor: pointer;

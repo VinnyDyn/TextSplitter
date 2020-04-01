@@ -1,13 +1,16 @@
 import {IInputs, IOutputs} from "./generated/ManifestTypes";
+import ReactDOM = require("react-dom");
+import React = require("react");
+import { TextSplitterTSX } from "./tsx/TextSplitterTSX";
+import { Util } from "./util/Util";
+import { TextSplitterData } from "./util/TextSplitterData";
 
 export class TextSplitter implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 
 	private _container : HTMLDivElement;
-	private _textbox : HTMLInputElement;
 	private _notifyOutputChanged: () => void;
 	private _refreshData : EventListener;
-	private _containerSplittedDiv : HTMLDivElement;
-	public _separator : string;
+	public _id : string;
 	public _value : string;
 
 	/**
@@ -15,7 +18,7 @@ export class TextSplitter implements ComponentFramework.StandardControl<IInputs,
 	 */
 	constructor()
 	{
-
+		this._id = Util.NewGuid();
 	}
 
 	/**
@@ -29,14 +32,17 @@ export class TextSplitter implements ComponentFramework.StandardControl<IInputs,
 	public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement)
 	{
 		this._container = container;
-		this._container.id = "MainContainer";
-		this._separator = context.parameters.separator.raw!;
-		this._value = context.parameters.attribute.raw!;
 		this._notifyOutputChanged = notifyOutputChanged;
-		this._refreshData = this.UpdateData.bind(this);
-		this.RenderInputText();
-		this.RenderSplittedDiv();
-		this.UpdateData();
+		this._refreshData = this.UpdateData.bind(this, this._value);
+		TextSplitterData.Handler(this);
+		ReactDOM.render(
+			React.createElement(TextSplitterTSX,{
+				id : this._id,
+				value : context.parameters.attribute.raw!,
+				separator : context.parameters.separator.raw!
+			}),
+			this._container
+			);
 	}
 
 	/**
@@ -62,64 +68,14 @@ export class TextSplitter implements ComponentFramework.StandardControl<IInputs,
 	 */
 	public destroy(): void
 	{
-		this._textbox.removeEventListener("input", this._refreshData);
 	}
 
-	private RenderSplittedDiv() : void
+		/**
+	 * Método chamado pelo React para notificar a atualização dos valores
+	 */
+	public UpdateData(value : string)
 	{
-		this._containerSplittedDiv = document.createElement("div");
-		this._containerSplittedDiv.id = "SplittedContainer";
-		this._container.append(this._containerSplittedDiv);
-	}
-
-	private RenderInputText() : void
-	{
-		this._textbox = document.createElement("input");
-		this._textbox.setAttribute("type","text");
-		this._textbox.id = "MainInputText";
-		this._textbox.value = this._value;
-		this._textbox.addEventListener("input", this._refreshData);
-		this._container.append(this._textbox);
-	}
-	
-	private RenderSplittedLabel(index : number, value : string) : void
-	{
-		let splittedInput: HTMLInputElement;
-		splittedInput = document.createElement("input");
-		splittedInput.readOnly = true;
-		splittedInput.setAttribute("type","text");
-		splittedInput.addEventListener("click", this.Copy.bind(this, splittedInput));
-		splittedInput.id = index.toString();
-		splittedInput.value = value;
-		this._containerSplittedDiv.append(splittedInput);
-	}
-
-	private Copy(input : HTMLInputElement) : void
-	{
-		input.select();
-		input.setSelectionRange(0, 99999);
-		document.execCommand("copy");
-	}
-
-	public UpdateData()
-	{
-		this._value = this._textbox.value;
-		this.Clear();
-		let textValues = this._textbox.value.split(this._separator);
-		if(textValues.length > 1)
-		{
-			for (let index = 0; index < textValues.length; index++) {
-				const element = textValues[index];
-				this.RenderSplittedLabel(index, element);	
-			}
-		}
+		this._value = value;
 		this._notifyOutputChanged();
-	}
-
-	private Clear()
-	{
-		while (this._containerSplittedDiv.firstChild) {
-			this._containerSplittedDiv.removeChild(this._containerSplittedDiv.firstChild);
-		}
 	}
 }
